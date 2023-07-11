@@ -3,7 +3,7 @@ unit DAO.Generic;
 interface
 
 uses
-  DAO.Interfaces, System.SysUtils, DAO.RTTI;
+  DAO.Interfaces, System.SysUtils, DAO.RTTI, Vcl.StdCtrls, Vcl.Forms;
 
 type
 
@@ -15,7 +15,7 @@ type
       constructor Create;
       destructor Destroy; override;
       class function New : iDAO<T>;
-      procedure update;
+      procedure update(aForm : TForm);
       procedure insert;
       procedure delete;
       procedure Display ( aValue : TProc<String>);
@@ -33,7 +33,7 @@ end;
 
 procedure TGenericDAO<T>.delete;
 begin
-  //
+  FDisplay(TDAORtti.getDeleteSQL<T>(FEntidade));
 end;
 
 destructor TGenericDAO<T>.Destroy;
@@ -64,9 +64,9 @@ begin
   Result := FEntidade;
 end;
 
-procedure TGenericDAO<T>.update;
+procedure TGenericDAO<T>.update(aForm : TForm);
 begin
-  //
+  FDisplay(TDAORtti.getUpdateSQL<T>(FEntidade, aForm));
 end;
 
 end.

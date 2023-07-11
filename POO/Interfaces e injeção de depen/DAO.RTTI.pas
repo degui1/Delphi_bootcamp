@@ -3,11 +3,20 @@ unit DAO.RTTI;
 interface
 
 uses
-  System.RTTI, System.SysUtils;
+  System.RTTI, System.SysUtils, Vcl.Forms;
 
 type
 
-  TAttrType = (tpString, tpInteger);
+  TAttrType = (tpString, tpInteger, tpID);
+
+  TFormFields = class(TCustomAttribute)
+    private
+    FFormField: String;
+    procedure SetFormField(const Value: String);
+    public
+      constructor Create ( aFormField : String );
+      property FormField: String read FFormField write SetFormField;
+  end;
 
   TableName = class(TCustomAttribute)
     private
@@ -31,11 +40,54 @@ type
   TDAORTTI = class
     private
     public
-      class function getInsertSQL<T : class> ( aEntity: T ) : String;
+      class function getInsertSQL<T : class> ( aEntity : T ) : String;
+      class function getDeleteSQL<T : class> ( aEntity : T ) : String;
+      class function getUpdateSQL<T : class> ( aEntity : T; aForm : TForm ) : String;
   end;
 implementation
 
+uses
+  Vcl.StdCtrls;
+
 { TDAORTTI }
+
+class function TDAORTTI.getDeleteSQL<T>(aEntity: T): String;
+var
+  ctx: TRttiContext;
+  typeRtti : TRttiType;
+  props : TRttiProperty;
+  Attr : TCustomAttribute;
+  FTableName : String;
+begin
+  ctx := TRttiContext.Create;
+  try
+    typeRtti := ctx.GetType(aEntity.ClassInfo);
+
+    for Attr in typeRtti.GetAttributes do
+      if Attr is TableName then
+        FTableName := TableName(attr).TableName;
+
+    Result := 'DELETE FROM ' + FTableName + ' WHERE ';
+
+    for props in typeRtti.GetProperties do
+    begin
+      for Attr in props.GetAttributes do
+      begin
+        if Attr is FieldType then
+        begin
+          case FieldType(Attr).AttrType of
+            tpID: Result := Result + props.Name + ' = ' + (props.GetValue(Pointer(aEntity)).AsInteger).ToString;
+          end;
+        end;
+      end;
+    end;
+
+
+
+  finally
+    ctx.Free;
+  end;
+end;
 
 class function TDAORTTI.getInsertSQL<T>(aEntity: T): String;
 var
@@ -74,6 +126,7 @@ begin
           case FieldType(attr).AttrType of
             tpInteger: Result := Result + (props.GetValue(Pointer(aEntity)).AsInteger).ToString + ',';
             tpString:  Result := Result + QuotedStr(props.GetValue(Pointer(aEntity)).AsString) + ',';
+            tpID: Result := Result + (props.GetValue(Pointer(aEntity)).AsInteger).ToString + ',';
           end;
         end;
       end;
@@ -82,6 +135,77 @@ begin
     Result := Copy(Result, 0, Length(Result) -1);
 
     Result := Result + ')';
+  finally
+    ctx.Free;
+  end;
+end;
+
+class function TDAORTTI.getUpdateSQL<T>(aEntity: T; aForm : TForm): String;
+var
+  ctx: TRttiContext;
+  typeRtti : TRttiType;
+  typeRttiForm: TRttiType;
+  fieldForm : TRttiField;
+  props : TRttiProperty;
+  Attr : TCustomAttribute;
+  AttrForm : TCustomAttribute;
+  FTableName : String;
+begin
+  ctx := TRttiContext.Create;
+  try
+    typeRtti := ctx.GetType(aEntity.ClassInfo);
+
+    for Attr in typeRtti.GetAttributes do
+      if Attr is TableName then
+        FTableName := TableName(attr).TableName;
+
+    Result := 'UPDATE FROM ' + FTableName + ' SET ';
+
+    for props in typeRtti.GetProperties do
+    begin
+      for Attr in props.GetAttributes do
+        if Attr is FieldType then
+        begin
+          typeRttiForm := ctx.GetType(aForm.ClassType);
+          for fieldForm in typeRttiForm.GetFields do
+          begin
+            for AttrForm in fieldForm.GetAttributes do
+            begin
+              if AttrForm is TFormFields then
+              begin
+                case FieldType(Attr).AttrType of
+                tpString :
+                begin
+                  Result := Result + props.Name + ' = ' + TEdit(fieldForm).Text + ',';
+                end;
+                tpInteger :
+                begin
+                  Result := Result + props.Name + ' = ' + TEdit(fieldForm).Text + ',';
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+
+    Result := Copy(Result, 0, Length(Result) -1);
+
+    Result := Result + '    WHERE ';
+
+    for props in typeRtti.GetProperties do
+    begin
+      for Attr in props.GetAttributes do
+      begin
+        if Attr is FieldType then
+        begin
+          case FieldType(Attr).AttrType of
+            tpID : Result := Result + props.Name + ' = ' + (props.GetValue(Pointer(aEntity)).AsInteger).ToString;
+          end;
+        end;
+      end;
+    end;
+
   finally
     ctx.Free;
   end;
@@ -109,6 +233,18 @@ end;
 procedure FieldType.SetAttrType(const Value: TAttrType);
 begin
   FAttrType := Value;
+end;
+
+{ TFormFields }
+
+constructor TFormFields.Create(aFormField: String);
+begin
+  FFormField := aFormField;
+end;
+
+procedure TFormFields.SetFormField(const Value: String);
+begin
+  FFormField := Value;
 end;
 
 end.
