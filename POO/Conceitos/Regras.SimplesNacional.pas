@@ -1,51 +1,69 @@
 unit Regras.SimplesNacional;
+
 interface
+
 uses
-  Regras.Interfaces, System.SysUtils;
+  Regras.Interfaces, System.SysUtils, Regras.Operacoes;
+
 type
-  TRegraSimplesNacional = class(TInterfacedObject, iRegra)
+  TRegraSimplesNacional = class(TInterfacedObject, iRegras)
     private
-      FDisplay : TProc<String>;
+      FOperacoes : iRegrasOperacoes;
+      FParametros : iRegrasParametros;
     public
-      class function New : iRegra;
-      function Nome : String;
-      function CalcularImposto ( aValue : Currency ) : Currency; overload;
-      function CalcularImposto ( aValue : String ) : Currency; overload;
-      function Display ( aDisplay : TProc<String> ) : iRegra;
+      constructor Create;
+      destructor Destroy; override;
+      class function New : iRegras;
+      function Parametros : iRegrasParametros;
+      function Operacoes : iRegrasOperacoes;
   end;
+
 implementation
 
 uses
-  Regras.Controller, Regras.Tipo;
+  Regras.Controller, Regras.Tipo, Regras.Parametros;
+
 { TRegraSimplesNacional }
-function TRegraSimplesNacional.CalcularImposto(aValue: Currency): Currency;
+
+constructor TRegraSimplesNacional.Create;
 begin
-  Result := (aValue * 0.3) + aValue;
-  if Assigned(FDisplay) then
-    FDisplay(CurrToStr(Result));
-end;
-function TRegraSimplesNacional.CalcularImposto(aValue: String): Currency;
-begin
-  Result := 0;
-  if TryStrToCurr(aValue, Result) then
-    Result := CalcularImposto(StrToCurr(aValue));
+  FParametros :=
+  TRegraParametros
+    .New(Self)
+    .Name('Simples Nacional')
+    .PercentImposto(0.2)
+    .PercentImpostoST(0.95)
+    .PercentImpostoISS(0.1);
 end;
 
-function TRegraSimplesNacional.Display(aDisplay: TProc<String>): iRegra;
+destructor TRegraSimplesNacional.Destroy;
 begin
-  Result := Self;
-  FDisplay := aDisplay;
+
+  inherited;
 end;
 
-class function TRegraSimplesNacional.New: iRegra;
+class function TRegraSimplesNacional.New: iRegras;
 begin
   Result := Self.Create;
 end;
 
-function TRegraSimplesNacional.Nome: String;
+function TRegraSimplesNacional.Operacoes: iRegrasOperacoes;
 begin
-  Result := 'Simples Nacional';
+  if not Assigned(FOperacoes) then
+    FOperacoes := TRegraOperacoes.New(Self);
+
+  Result := FOperacoes;
 end;
+
+function TRegraSimplesNacional.Parametros: iRegrasParametros;
+begin
+  if not Assigned(FParametros) then
+    FParametros := TRegraParametros.New(Self);
+
+  Result := FParametros;
+end;
+
 initialization
-  TRegraController.New.Registry(Integer(trSimplesNacional), 'Simples Nacional');
+  TRegraController.New.Registry(Integer(trSimples), 'Simples Nacional');
+
 end.

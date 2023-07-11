@@ -3,22 +3,24 @@ unit Regras.Controller;
 interface
 
 uses
-  Regras.Interfaces, System.Generics.Collections, System.Classes;
+  Regras.Interfaces,
+  System.Generics.Collections,
+  System.Classes;
 
 type
-  TRegraController = class(TInterfacedObject, iRegraController)
+  TRegraController = class(TInterfacedObject, iRegrasController)
     private
-    FDictionary : TDictionary<Integer, String>;
+      FListRegras : TDictionary<Integer, String>;
     public
       constructor Create;
       destructor Destroy; override;
-      class function New : iRegraController;
-      function Registry ( aKey : Integer; aName : String ) : iRegraController;
-      function ListaRegras ( aValue : TStrings ) : iRegraController;
-  end;
+      class function New : iRegrasController;
+      function Registry ( aKey : Integer; aValue : String ) : iRegrasController;
+       function ListaRegras (aValue : TStrings ) : iRegrasController;
+ end;
 
 var
-  FRegraController : iRegraController;
+  RegraController : iRegrasController;
 
 implementation
 
@@ -26,40 +28,40 @@ implementation
 
 constructor TRegraController.Create;
 begin
-  FDictionary := TDictionary<Integer, String>.Create;
+  FListRegras := TDictionary<Integer, String>.Create;
 end;
 
 destructor TRegraController.Destroy;
 begin
-  FDictionary.Free;
+  FListRegras.Free;
   inherited;
 end;
 
-function TRegraController.ListaRegras(aValue: TStrings): iRegraController;
+function TRegraController.ListaRegras(aValue: TStrings): iRegrasController;
 var
-  I : Integer;
   KeysArray : TArray<Integer>;
+  I: Integer;
 begin
   aValue.Clear;
-  KeysArray := FDictionary.Keys.ToArray;
+  KeysArray := FListRegras.Keys.ToArray;
   TArray.Sort<Integer>(KeysArray);
   for I in KeysArray do
-      aValue.Add(FDictionary.Items[I]);
+    aValue.Add(FListRegras.Items[I]);
 end;
 
-class function TRegraController.New: iRegraController;
+class function TRegraController.New: iRegrasController;
 begin
-  if not Assigned(FRegraController) then
-    FRegraController := Self.Create;
+  if not Assigned(RegraController) then
+    RegraController := Self.Create;
 
-  Result := FRegraController;
+  Result := RegraController;
 end;
 
 function TRegraController.Registry(aKey: Integer;
-  aName: String): iRegraController;
+  aValue: String): iRegrasController;
 begin
   Result := Self;
-  FDictionary.Add(aKey, aName);
+  FListRegras.Add(aKey, aValue);
 end;
 
 end.

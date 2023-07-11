@@ -1,0 +1,54 @@
+unit Regras.SimplesNacional;
+interface
+uses
+  Regras.Interfaces, System.SysUtils, Regras.Operacoes;
+type
+  TRegraSimplesNacional = class(TInterfacedObject, iRegra)
+    private
+      FParametros: iRegraParametros;
+      FOperacoes : iRegrasOperacoes;
+    public
+      constructor Create;
+      destructor Destroy; override;
+      class function New : iRegra;
+      function Parametros : iRegraParametros;
+      function Operacoes : iRegrasOperacoes;
+  end;
+implementation
+
+uses
+  Regras.Controller, Regras.Tipo, Regras.Parametros;
+{ TRegraSimplesNacional }
+
+constructor TRegraSimplesNacional.Create;
+begin
+  FParametros := TRegraParametros.New(Self);
+  FParametros
+    .Nome('Simples Nacional')
+    .PercentImposto(0.3);
+end;
+
+destructor TRegraSimplesNacional.Destroy;
+begin
+
+  inherited;
+end;
+
+class function TRegraSimplesNacional.New: iRegra;
+begin
+  Result := Self.Create;
+end;
+
+function TRegraSimplesNacional.Operacoes: iRegrasOperacoes;
+begin
+  Result := TRegraOperacoes.New(Self);
+end;
+
+function TRegraSimplesNacional.Parametros: iRegraParametros;
+begin
+
+end;
+
+initialization
+  TRegraController.New.Registry(Integer(trSimplesNacional), 'Simples Nacional');
+end.

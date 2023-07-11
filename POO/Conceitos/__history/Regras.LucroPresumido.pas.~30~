@@ -1,0 +1,61 @@
+unit Regras.LucroPresumido;
+interface
+
+uses
+  Regras.Interfaces, System.SysUtils, Regras.Parametros;
+type
+  TRegraLucroPresumido = class(TInterfacedObject, iRegra)
+    private
+      FParametros : iRegraParametros;
+      FOperacoes : iRegrasOperacoes;
+    public
+      constructor Create;
+      destructor Destroy; override;
+      class function New : iRegra;
+      function Parametros : iRegraParametros;
+      function Operacoes : iRegrasOperacoes;
+  end;
+implementation
+
+uses
+  Regras.Controller, Regras.Tipo, Regras.Operacoes;
+{ TRegraLucroPresumido }
+
+constructor TRegraLucroPresumido.Create;
+begin
+  FParametros := TRegraParametros.New(Self);
+  FParametros
+    .Nome('Lucro Presumido')
+    .PercentImposto(0.4);
+end;
+
+destructor TRegraLucroPresumido.Destroy;
+begin
+
+  inherited;
+end;
+
+class function TRegraLucroPresumido.New: iRegra;
+begin
+  Result := Self.Create;
+end;
+
+function TRegraLucroPresumido.Operacoes: iRegrasOperacoes;
+begin
+  if not Assigned(FOperacoes) then
+    FOperacoes := TRegraOperacoes.New(Self);
+
+  Result := FOperacoes;
+end;
+
+function TRegraLucroPresumido.Parametros: iRegraParametros;
+begin
+  if not Assigned(FParametros) then
+    FParametros := TRegraParametros.New(Self);
+
+  Result := FParametros;
+end;
+
+initialization
+  TRegraController.New.Registry(Integer(trPresumido), 'Lucro Presumido');
+end.

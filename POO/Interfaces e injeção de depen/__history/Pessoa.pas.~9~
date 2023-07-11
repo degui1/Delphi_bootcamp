@@ -1,0 +1,35 @@
+unit Pessoa;
+
+interface
+
+uses
+  DAO.RTTI;
+
+type
+  [TableName('TAB_PESSOA')]
+  TPessoa = class
+    private
+    Fidade: String;
+    FNome: String;
+    procedure Setidade(const Value: Integer);
+    procedure SetNome(const Value: String);
+    public
+      property Nome : String read FNome write SetNome;
+      property idade : String read Fidade write Setidade;
+  end;
+
+implementation
+
+{ TPessoa }
+
+procedure TPessoa.Setidade(const Value: String);
+begin
+  Fidade := Value;
+end;
+
+procedure TPessoa.SetNome(const Value: String);
+begin
+  FNome := Value;
+end;
+
+end.

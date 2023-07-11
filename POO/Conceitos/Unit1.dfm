@@ -50,7 +50,7 @@ object Form1: TForm1
     Top = 35
     Width = 145
     Height = 30
-    Caption = 'Button1'
+    Caption = 'Exibir'
     TabOrder = 3
     OnClick = Button1Click
   end
@@ -59,8 +59,17 @@ object Form1: TForm1
     Top = 111
     Width = 145
     Height = 34
-    Caption = 'Button2'
+    Caption = 'Calcular Imposto'
     TabOrder = 4
     OnClick = Button2Click
+  end
+  object Button3: TButton
+    Left = 8
+    Top = 151
+    Width = 145
+    Height = 34
+    Caption = 'Calcular Imposto St'
+    TabOrder = 5
+    OnClick = Button3Click
   end
 end

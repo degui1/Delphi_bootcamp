@@ -1,0 +1,32 @@
+unit Regras.LucroReal;
+interface
+uses
+  Regras.Interfaces, System.SysUtils, Regras.Operacoes;
+type
+  TRegraLucroReal = class(TInterfacedObject, iRegra)
+    private
+      FDisplay : TProc<String>;
+    public
+      class function New : iRegra;
+      function Parametros : iRegraParametros;
+      function Operacoes : iRegrasOperacoes;
+  end;
+implementation
+
+uses
+  Regras.Controller, Regras.Tipo;
+{ TRegraLucroPresumido }
+
+class function TRegraLucroReal.New: iRegra;
+begin
+  Result := Self.Create;
+end;
+
+function TRegraLucroReal.Operacoes: iRegrasOperacoes;
+begin
+  Result := TRegraOperacoes.New(Self);
+end;
+
+initialization
+  TRegraController.New.Registry(Integer(trReal), 'Lucro Real');
+end.

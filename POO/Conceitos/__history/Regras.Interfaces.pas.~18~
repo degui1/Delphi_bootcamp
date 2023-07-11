@@ -1,0 +1,44 @@
+unit Regras.Interfaces;
+
+interface
+
+uses
+  System.SysUtils, System.Classes;
+
+type
+
+  iRegrasOperacoes = interface;
+  iRegraParametros = interface;
+
+  iRegraController = interface
+    ['{D548C78E-E96E-4C8B-9503-776987F4FE54}']
+    function Registry ( aKey : Integer; aName : String ) : iRegraController;
+    function ListaRegras ( aValue : TStrings ) : iRegraController;
+  end;
+
+  iRegra = interface
+    ['{1CB3C835-D152-443C-8E5B-6C451CAD0E55}']
+    function Parametros : iRegraParametros;
+    function Operacoes : iRegrasOperacoes;
+  end;
+
+  iRegraParametros = interface
+    function Nome : String; overload;
+    function Nome ( aValue : String ) : iRegraParametros; overload;
+    function Display ( aDisplay : TProc<String> ) : iRegra; overload;
+    function Display : TProc<String>; overload;
+    function PercentImposto : Currency; overload.
+    function PercentImposto ( aValue : Currency ) : iRegraParametros; overload;
+  end;
+
+  iRegrasOperacoes = interface
+    ['{6ACB6F63-8DA3-4223-B7C1-991A5EB84B3F}']
+    function CalcularImposto   ( aValue : Currency ) : Currency; overload;
+    function CalcularImposto   ( aValue : String   ) : Currency; overload;
+    function CalcularImpostoSt ( aValue : Currency ) : Currency; overload;
+    function CalcularImpostoSt ( aValue : String   ) : Currency; overload;
+  end;
+
+implementation
+
+end.

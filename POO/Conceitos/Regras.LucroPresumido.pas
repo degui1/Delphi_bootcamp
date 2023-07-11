@@ -1,52 +1,71 @@
 unit Regras.LucroPresumido;
+
 interface
 
 uses
-  Regras.Interfaces, System.SysUtils;
+  Regras.Interfaces,
+  System.SysUtils;
+
 type
-  TRegraLucroPresumido = class(TInterfacedObject, iRegra)
+  TRegraLucroPresumido = class(TInterfacedObject, iRegras)
     private
-      FDisplay : TProc<String>;
+      FOperacoes : iRegrasOperacoes;
+      FParametros : iRegrasParametros;
     public
-      class function New : iRegra;
-      function Nome : String;
-      function CalcularImposto ( aValue : Currency ) : Currency; overload;
-      function CalcularImposto ( aValue : String ) : Currency; overload;
-      function Display ( aDisplay : TProc<String> ) : iRegra;
+      constructor Create;
+      destructor Destroy; override;
+      class function New : iRegras;
+      function Parametros : iRegrasParametros;
+      function Operacoes : iRegrasOperacoes;
   end;
+
 implementation
 
 uses
-  Regras.Controller, Regras.Tipo;
+  Regras.Controller, Regras.Tipo, Regras.Operacoes, Regras.Parametros;
+
 { TRegraLucroPresumido }
-function TRegraLucroPresumido.CalcularImposto(aValue: Currency): Currency;
+
+
+constructor TRegraLucroPresumido.Create;
 begin
-  Result := (aValue * 0.4) + aValue;
-  if Assigned(FDisplay) then
-    FDisplay(CurrToStr(Result));
-end;
-function TRegraLucroPresumido.CalcularImposto(aValue: String): Currency;
-begin
-  Result := 0;
-  if TryStrToCurr(aValue, Result) then
-    Result := CalcularImposto(StrToCurr(aValue));
+  FParametros :=
+  TRegraParametros
+    .New(Self)
+    .Name('Lucro Presumido')
+    .PercentImposto(0.3)
+    .PercentImpostoST(0.65)
+    .PercentImpostoISS(0.12);
 end;
 
-function TRegraLucroPresumido.Display(aDisplay: TProc<String>): iRegra;
+destructor TRegraLucroPresumido.Destroy;
 begin
-  Result := Self;
-  FDisplay := aDisplay;
+
+  inherited;
 end;
 
-class function TRegraLucroPresumido.New: iRegra;
+class function TRegraLucroPresumido.New: iRegras;
 begin
   Result := Self.Create;
 end;
 
-function TRegraLucroPresumido.Nome: String;
+function TRegraLucroPresumido.Operacoes: iRegrasOperacoes;
 begin
-  Result := 'Lucro Presumido'
+  if not Assigned(FOperacoes) then
+    FOperacoes := TRegraOperacoes.New(Self);
+
+  Result := FOperacoes;
 end;
+
+function TRegraLucroPresumido.Parametros: iRegrasParametros;
+begin
+  if not Assigned(FParametros) then
+    FParametros := TRegraParametros.New(Self);
+
+  Result := FParametros;
+end;
+
 initialization
   TRegraController.New.Registry(Integer(trPresumido), 'Lucro Presumido');
+
 end.

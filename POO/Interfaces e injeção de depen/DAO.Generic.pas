@@ -1,0 +1,72 @@
+unit DAO.Generic;
+
+interface
+
+uses
+  DAO.Interfaces, System.SysUtils, DAO.RTTI;
+
+type
+
+  TGenericDAO<T : class, constructor> = class(TInterfacedObject, iDAO<T>)
+    private
+      FEntidade : T;
+      FDisplay : TProc<String>;
+    public
+      constructor Create;
+      destructor Destroy; override;
+      class function New : iDAO<T>;
+      procedure update;
+      procedure insert;
+      procedure delete;
+      procedure Display ( aValue : TProc<String>);
+      function This : T;
+  end;
+
+implementation
+
+{ TGenericDAO<T> }
+
+constructor TGenericDAO<T>.Create;
+begin
+  FEntidade := T.Create;
+end;
+
+procedure TGenericDAO<T>.delete;
+begin
+  //
+end;
+
+destructor TGenericDAO<T>.Destroy;
+begin
+  if Assigned(FEntidade) then
+    FEntidade.Free;
+  inherited;
+end;
+
+procedure TGenericDAO<T>.Display(aValue: TProc<String>);
+begin
+
+  FDisplay := aValue;
+end;
+
+procedure TGenericDAO<T>.insert;
+begin
+  FDisplay(TDAORtti.getInsertSQL<T>(FEntidade));
+end;
+
+class function TGenericDAO<T>.New: iDAO<T>;
+begin
+  Result := Self.Create;
+end;
+
+function TGenericDAO<T>.This: T;
+begin
+  Result := FEntidade;
+end;
+
+procedure TGenericDAO<T>.update;
+begin
+  //
+end;
+
+end.
